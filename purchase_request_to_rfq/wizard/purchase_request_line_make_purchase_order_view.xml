@@ -9,14 +9,14 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                  <form string="Create RFQ">
-                     <separator string="Existing RFQ to update:"/>
+                     <separator string="Actualizar Orden de Compra:"/>
                      <newline/>
                      <group>
                         <field name="purchase_order_id"/>
                      </group>
                      <newline/>
                      <separator
-                             string="New PO details:"/>
+                             string="Nueva OdC, Detalles:"/>
                      <newline/>
                      <group>
                          <field name="supplier_id"/>
@@ -41,7 +41,7 @@
                      <newline/>
                      <footer>
                          <button name="make_purchase_order"
-                                 string="Create RFQ" type="object"
+                                 string="Crear OdC" type="object"
                                  class="oe_highlight"/>
                          <button special="cancel" string="Cancel" class="oe_link"/>
                      </footer>
@@ -50,7 +50,7 @@
         </record>
 
         <record id="action_purchase_request_line_make_purchase_order" model="ir.actions.act_window">
-            <field name="name">Create RFQ</field>
+            <field name="name">Agregar a OdC</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">purchase.request.line.make.purchase.order</field>
             <field name="view_type">form</field>

@@ -60,7 +60,7 @@ class PurchaseRequestLine(models.Model):
                     temp_purchase_state = 'draft'
             rec.purchase_state = temp_purchase_state
 
-    purchased_qty = fields.Float(string='Quantity in RFQ or PO',
+    purchased_qty = fields.Float(string='Cantidad en Orden de Compra',
                                  compute="_compute_purchased_qty")
     purchase_lines = fields.Many2many(
         'purchase.order.line', 'purchase_request_purchase_order_line_rel',
@@ -69,7 +69,7 @@ class PurchaseRequestLine(models.Model):
         readonly=True, copy=False)
     purchase_state = fields.Selection(
         compute="_compute_purchase_state",
-        string="Purchase Status",
+        string="Estado de Compra",
         selection=lambda self:
         self.env['purchase.order']._fields['state'].selection,
         store=True,

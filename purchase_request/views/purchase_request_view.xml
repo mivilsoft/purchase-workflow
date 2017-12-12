@@ -11,27 +11,40 @@
                 <header>
                     <button name="button_draft"
                             states="to_approve,approved,rejected,done"
-                            string="Reset"
+                            string="Resetear"
                             type="object"
                             groups="purchase_request.group_purchase_request_manager"/>
-                    <button name="button_to_approve" states="draft"
-                            string="Request approval" type="object"
+                    <button name="button_to_approve" 
+                            states="draft"
+                            string="Solicitar" 
+                            type="object"
                             class="oe_highlight"/>
+                    <button name="button_to_approve_master"
+                            states="standby"
+                            string="Autorizar"
+                            type="object"
+                            class="oe_highlight"
+                            groups="purchase_request.group_purchase_request_bodega"/>
                     <button name="button_approved"
                             states="to_approve"
-                            string="Approve"
+                            string="Aprobar"
                             type="object"
                             class="oe_highlight"
                             groups="purchase_request.group_purchase_request_manager"/>
                     <button name="button_done"
                             states="approved"
-                            string="Done"
+                            string="Comprado"
                             type="object"
                             class="oe_highlight"
-                            groups="purchase_request.group_purchase_request_manager"/>
+                            groups="purchase_request.group_purchase_request_manager,purchase_request.group_purchase_request_compra"/>
                     <button name="button_rejected"
-                            states="to_approve,approved"
-                            string="Reject"
+                            states="approved,standby"
+                            string="Rechazar Bodega"
+                            type="object"
+                            groups="purchase_request.group_purchase_request_manager,purchase_request.group_purchase_request_bodega"/>
+                    <button name="button_rejected"
+                            states="approved,standby"
+                            string="Rechazar Compra"
                             type="object"
                             groups="purchase_request.group_purchase_request_manager"/>
                     <field name="state" widget="statusbar"
@@ -40,35 +53,45 @@
                 </header>
                 <sheet>
                     <div class="oe_edit_only">
-                        <label for="name" class="oe_inline"/>
-                        <label for="origin" class="oe_inline"/>
+                        <label for="name" class="oe_inline"
+                         attrs="{'readonly': [('is_editable','=', False)]}"/>
+                        <label for="origin" class="oe_inline" invisible="1"/>
                     </div>
                     <h1>
                         <field name="is_editable" invisible="1"/>
                         <field name="name" class="oe_inline"
                                attrs="{'readonly': [('is_editable','=', False)]}"/>
-                        <label string=","/>
+                        <label string="," invisible="1"/>
                         <field name="origin" class="oe_inline"
-                               attrs="{'readonly': [('is_editable','=', False)]}"/>
+                               attrs="{'readonly': [('is_editable','=', False)]}" invisible="1"/>
                     </h1>
                     <group>
                         <group>
                             <field name="requested_by"
                                    attrs="{'readonly': [('is_editable','=', False)]}"/>
                             <field name="assigned_to"
-                                   attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                   attrs="{'readonly': [('is_editable','=', False)]}"
+                                   string="Aprobado por"
+                                   domain="[('partner_id', 'in', ['Andrés Rivera','José Miranda','Álvaro Aldás'])]"
+                                   options="{'no_create_edit':true,
+                                            'no_create_edit':true,
+                                            'no_open':true}"/>
                         </group>
                         <group>
                             <field name="description"
-                                   attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                   attrs="{'readonly': [('is_editable','=', False)]}"
+                                   string="Observaciones"
+                                   />
                         </group>
                         <group>
                             <field name="date_start"
-                                    attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                    attrs="{'readonly': [('is_editable','=', False)]}" invisible="1"/>
                             <field name="picking_type_id"
-                                   attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                   attrs="{'readonly': [('is_editable','=', False)]}" invisible="1"/>
                             <field name="company_id" groups="base.group_multi_company" widget="selection"
-                                   attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                   attrs="{'readonly': [('is_editable','=', False)]}" invisible="1"/>
+                            <field name="hour_start"/>
+                            <field name="hour_end"/>
                         </group>
                     </group>
                     <notebook>
@@ -78,10 +101,14 @@
                                     <field name="product_id"/>
                                     <field name="name"/>
                                     <field name="product_qty"/>
-                                    <field name="product_uom_id" groups="product.group_uom"/>
+                                    <field name="product_uom_id"  />
                                     <field name="analytic_account_id"
                                            groups="analytic.group_analytic_accounting"/>
-                                    <field name="date_required"/>
+                                    <field name="specifications"/>
+                                    <field name="date_required" 
+                                           attrs="{'readonly':[('is_editable','=',False)]}"/>
+                                    <field name="priority" 
+                                           attrs="{'readonly':[('is_editable','=',False)]}"/>
                                     <field name="cancelled" invisible="1"/>
                                     <field name="is_editable" invisible="1"/>
                                 </tree>
@@ -101,21 +128,23 @@
                                                            class="oe_inline"
                                                            attrs="{'readonly': [('is_editable','=', False)]}"/>
                                                     <field name="product_uom_id"
-                                                           groups="product.group_uom"
+                                                           
                                                            class="oe_inline"
-                                                           attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                                           attrs="{'readonly': [('is_editable','=', True)]}"/>
                                                 </div>
                                                 <field name="analytic_account_id"
                                                        groups="analytic.group_analytic_accounting"
                                                        attrs="{'readonly': [('is_editable','=', False)]}"/>
                                                 <field name="date_required"
                                                        attrs="{'readonly': [('is_editable','=', False)]}"/>
-                                                <field name="cancelled"/>
-                                                <field name="procurement_id"/>
+                                                <field name="priority"
+                                                       attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                                <field name="cancelled" invisible="1"/>
+                                                <field name="procurement_id" invisible="1"/>
                                             </group>
                                         </group>
                                         <group>
-                                            <separator string="Specifications"/>
+                                            <separator string="Especificaciones"/>
                                             <newline/>
                                             <field name="specifications"
                                                    nolabel="1"
@@ -147,11 +176,13 @@
                       string="Purchase Request">
                     <field name="message_needaction" invisible="1"/>
                     <field name="name"/>
-                    <field name="date_start"/>
+                    <field name="hour_start"/>
                     <field name="requested_by"/>
+                    <field name="assigned_to"/>
                     <field name="company_id" groups="base.group_multi_company" widget="selection"/>
-                    <field name="origin"/>
+                    <field name="origin" invisible="1"/>
                     <field name="state"/>
+                    <field name="hour_end"/>
                 </tree>
           </field>
         </record>
@@ -208,7 +239,7 @@
 
 
         <record model="ir.actions.act_window" id="purchase_request_form_action">
-            <field name="name">Purchase Requests</field>
+            <field name="name">Orden de Pedido</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">purchase.request</field>
             <field name="view_type">form</field>
@@ -239,17 +270,19 @@
                 <tree string="Purchase Request Lines" create="false"
                       decoration-muted="cancelled == True">
                     <field name="request_id"/>
-                    <field name="request_state"/>
+                    <field name="product_id"/>
+                    <field name="name"/>
+                    <field name="specifications"/>
                     <field name="requested_by"/>
                     <field name="assigned_to"/>
                     <field name="date_required"/>
-                    <field name="product_id"/>
-                    <field name="name"/>
+                    <field name="priority"/>
                     <field name="product_qty"/>
-                    <field name="product_uom_id" groups="product.group_uom"/>
+                    <field name="product_uom_id" />
                     <field name="analytic_account_id"
                            groups="analytic.group_analytic_accounting"/>
                     <field name="supplier_id"/>
+                    <field name="request_state"/>
                     <field name="cancelled" invisible="1"/>
                 </tree>
             </field>
@@ -304,6 +337,8 @@
                                        attrs="{'readonly': [('is_editable','=', False)]}"/>
                                 <field name="date_required"
                                        attrs="{'readonly': [('is_editable','=', False)]}"/>
+                                <field name="priority"
+                                       attrs="{'readonly': [('is_editable','=', False)]}"/>
                                 <field name="cancelled"/>
                                 <field name="procurement_id"/>
                             </group>
@@ -337,6 +372,7 @@
                     <field name="assigned_to"/>
                     <field name="date_start"/>
                     <field name="date_required"/>
+                    <field name="priority"/>
                     <field name="analytic_account_id"/>
                     <field name="procurement_id"/>
                     <field name="cancelled" invisible="1"/>
@@ -389,7 +425,7 @@
 
         <record id="purchase_request_line_form_action"
                 model="ir.actions.act_window">
-            <field name="name">Purchase Request Lines</field>
+            <field name="name">Lineas de OdP</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">purchase.request.line</field>
             <field name="view_type">form</field>
@@ -422,12 +458,12 @@
 
 
         <menuitem id="parent_menu_purchase_request"
-            name="Purchase requests"
+            name="Ordenes de Pedido"
             groups="group_purchase_request_user,group_purchase_request_manager"
             />
 
         <menuitem id="menu_purchase_request"
-            name="Purchase Requests"
+            name="Ordenes de Pedidos"
             parent="parent_menu_purchase_request"
             groups="group_purchase_request_user,group_purchase_request_manager"
             />

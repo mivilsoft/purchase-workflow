@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 # Copyright 2016 Eficent Business and IT Consulting Services S.L.
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0).
-
+import time
+from datetime import datetime
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
 import odoo.addons.decimal_precision as dp
+from odoo.exceptions import UserError,ValidationError
 
 _STATES = [
     ('draft', 'Draft'),
-    ('to_approve', 'To be approved'),
-    ('approved', 'Approved'),
-    ('rejected', 'Rejected'),
-    ('done', 'Done')
+    ('standby','Chequeo'),
+    ('to_approve', 'En Espera'),
+    ('approved', 'Aprobado'),
+    ('rejected', 'Rechazado'),
+    ('done', 'Comprado')
 ]
 
 
@@ -32,7 +34,10 @@ class PurchaseRequest(models.Model):
 
     @api.model
     def _get_default_name(self):
-        return self.env['ir.sequence'].next_by_code('purchase.request')
+        #return self.env['ir.sequence'].next_by_code('purchase.request')
+        seq = self.env.ref('purchase_request.seq_purchase_request')
+        name = seq.number_next_actual
+        return name
 
     @api.model
     def _default_picking_type(self):
@@ -45,7 +50,17 @@ class PurchaseRequest(models.Model):
             types = type_obj.search([('code', '=', 'incoming'),
                                      ('warehouse_id', '=', False)])
         return types[:1]
+    
+    @api.model
+    def _default_bodega(self):
+        bodega_obj = self.env['res.users']
+        bname = bodega_obj.search([('name','=','Jaime Medina')])
+        return bname
 
+    @api.model
+    def _default_hour(self):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return now
     @api.multi
     @api.depends('state')
     def _compute_is_editable(self):
@@ -60,6 +75,8 @@ class PurchaseRequest(models.Model):
         for rec in self:
             if 'state' in init_values and rec.state == 'to_approve':
                 return 'purchase_request.mt_request_to_approve'
+            elif 'state' in init_values and rec.state == 'standby':
+                return 'purchase_request.mt_request_standby'
             elif 'state' in init_values and rec.state == 'approved':
                 return 'purchase_request.mt_request_approved'
             elif 'state' in init_values and rec.state == 'rejected':
@@ -68,7 +85,7 @@ class PurchaseRequest(models.Model):
                 return 'purchase_request.mt_request_done'
         return super(PurchaseRequest, self)._track_subtype(init_values)
 
-    name = fields.Char('Request Reference', size=32, required=True,
+    name = fields.Char('Código', size=32, required=True,
                        default=_get_default_name,
                        track_visibility='onchange')
     origin = fields.Char('Source Document', size=32)
@@ -78,12 +95,22 @@ class PurchaseRequest(models.Model):
                              default=fields.Date.context_today,
                              track_visibility='onchange')
     requested_by = fields.Many2one('res.users',
-                                   'Requested by',
+                                   'Requerido por',
                                    required=True,
                                    track_visibility='onchange',
                                    default=_get_default_requested_by)
-    assigned_to = fields.Many2one('res.users', 'Approver',
+    assigned_to = fields.Many2one('res.users', 'Aprobado por',
                                   track_visibility='onchange')
+    hour_start = fields.Datetime('Fecha y Hora',
+                                 required=True,
+                                 readonly=True,
+                                 default=_default_hour)
+    hour_end = fields.Datetime('Fecha Fin',
+                             readonly=True)
+    bodega_user = fields.Many2one('res.users','Bodega',
+                                 required=True, 
+                                 track_visibility='onchange', 
+                                 default=_default_bodega)
     description = fields.Text('Description')
     company_id = fields.Many2one('res.company', 'Company',
                                  required=True,
@@ -139,6 +166,9 @@ class PurchaseRequest(models.Model):
     @api.model
     def create(self, vals):
         request = super(PurchaseRequest, self).create(vals)
+        seq = self.env.ref('purchase_request.seq_purchase_request')
+        name = seq.next_by_id()
+        request.name = name
         if vals.get('assigned_to'):
             request.message_subscribe_users(user_ids=[request.assigned_to.id])
         return request
@@ -158,21 +188,41 @@ class PurchaseRequest(models.Model):
 
     @api.multi
     def button_to_approve(self):
-        self.to_approve_allowed_check()
+        for obj in self:
+            msg="Solicitud de Orden de Pedido Pendiente"
+            print("*******************//////////////************")
+            print(obj.bodega_user)
+            obj.bodega_user.notify_info(msg,sticky=True)
+        return self.write({'state': 'standby'})
+    
+    @api.multi
+    def button_to_approve_master(self):
+        for obj in self:
+            msg="Chequeo de Solicitud"
+            obj.assigned_to.notify_info(msg,sticky=True)
         return self.write({'state': 'to_approve'})
 
     @api.multi
     def button_approved(self):
+        for obj in self:
+            msg="Solicitud de Compra Aprobada"
+            obj.requested_by.notify_info(msg,sticky=True)
         return self.write({'state': 'approved'})
 
     @api.multi
     def button_rejected(self):
         self.mapped('line_ids').do_cancel()
+        for obj in self:
+            msg="Solicitud de Compra Rechazada"
+            obj.requested_by.notify_warning(msg,sticky=True)
         return self.write({'state': 'rejected'})
 
     @api.multi
     def button_done(self):
-        return self.write({'state': 'done'})
+        for obj in self:
+            obj.hour_end = time.strftime("%Y-%m-%d %H:%M:%S")
+        self.write({'state': 'done'})
+        return True
 
     @api.multi
     def check_auto_reject(self):
@@ -222,12 +272,13 @@ class PurchaseRequestLine(models.Model):
     name = fields.Char('Description', size=256,
                        track_visibility='onchange')
     product_uom_id = fields.Many2one('product.uom', 'Product Unit of Measure',
+                                     readonly=True,
                                      track_visibility='onchange')
     product_qty = fields.Float('Quantity', track_visibility='onchange',
                                digits=dp.get_precision(
                                    'Product Unit of Measure'))
     request_id = fields.Many2one('purchase.request',
-                                 'Purchase Request',
+                                 'Código',
                                  ondelete='cascade', readonly=True)
     company_id = fields.Many2one('res.company',
                                  related='request_id.company_id',
@@ -238,11 +289,11 @@ class PurchaseRequestLine(models.Model):
                                           track_visibility='onchange')
     requested_by = fields.Many2one('res.users',
                                    related='request_id.requested_by',
-                                   string='Requested by',
+                                   string='Requerido por',
                                    store=True, readonly=True)
     assigned_to = fields.Many2one('res.users',
                                   related='request_id.assigned_to',
-                                  string='Assigned to',
+                                  string='Asignado a',
                                   store=True, readonly=True)
     date_start = fields.Date(related='request_id.date_start',
                              string='Request Date', readonly=True,
@@ -256,17 +307,26 @@ class PurchaseRequestLine(models.Model):
     date_required = fields.Date(string='Request Date', required=True,
                                 track_visibility='onchange',
                                 default=fields.Date.context_today)
+    priority = fields.Selection(
+        [
+            ('urgent','Urgente (1-3 Horas'),
+            ('important','Importante (Mismo Día)'),
+            ('normal','Normal(1-2 Días)'),
+            ('low','Baja(Más de 2 Días)')
+        ],
+            string='Prioridad', required=True,
+                                track_visibility='onchange',)
     is_editable = fields.Boolean(string='Is editable',
                                  compute="_compute_is_editable",
                                  readonly=True)
     specifications = fields.Text(string='Specifications')
-    request_state = fields.Selection(string='Request state',
+    request_state = fields.Selection(string='Estado',
                                      readonly=True,
                                      related='request_id.state',
                                      selection=_STATES,
                                      store=True)
     supplier_id = fields.Many2one('res.partner',
-                                  string='Preferred supplier',
+                                  string='Proveedor',
                                   compute="_compute_supplier_id")
     procurement_id = fields.Many2one('procurement.order',
                                      'Procurement Order',

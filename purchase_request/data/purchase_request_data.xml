@@ -32,4 +32,12 @@
             <field name="description">Purchase Request is done</field>
         </record>
 
+        <record id="mt_request_standby" model="mail.message.subtype">
+            <field name="name">Purchase Request Checking</field>
+            <field name="res_model">purchase.request</field>
+            <field name="default" eval="True"/>
+            <field name="description">Purchase Request is Checking</field>
+        </record>
+
+
 </odoo>

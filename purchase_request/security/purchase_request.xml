@@ -16,8 +16,20 @@
         <field name="category_id" ref="module_category_purchase_request"/>
     </record>
 
+    <record id="group_purchase_request_bodega" model="res.groups">
+        <field name="name">Purchase Request Bodega</field>
+        <field name="implied_ids" eval="[(4, ref('purchase_request.group_purchase_request_user'))]"/>
+        <field name="category_id" ref="module_category_purchase_request"/>
+    </record>
+
     <record id="group_purchase_request_manager" model="res.groups">
         <field name="name">Purchase Request Manager</field>
+        <field name="implied_ids" eval="[(4, ref('purchase_request.group_purchase_request_user'))]"/>
+        <field name="category_id" ref="module_category_purchase_request"/>
+    </record>
+
+    <record id="group_purchase_request_compra" model="res.groups">
+        <field name="name">Purchase Request Compra</field>
         <field name="implied_ids" eval="[(4, ref('purchase_request.group_purchase_request_user'))]"/>
         <field name="category_id" ref="module_category_purchase_request"/>
     </record>
@@ -74,6 +86,26 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
+    <record id="purchase_request_bodega_rule" model="ir.rule">
+        <field name="name">Purchase Request Bodega</field>
+        <field name="model_id" ref="model_purchase_request"/>
+        <field name="groups" eval="[(6,0, [ref('group_purchase_request_bodega')])]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="purchase_request_compra_rule" model="ir.rule">
+        <field name="name">Purchase Request Compra</field>
+        <field name="model_id" ref="model_purchase_request"/>
+        <field name="groups" eval="[(6,0, [ref('group_purchase_request_compra')])]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
     <record id="purchase_request_line_followers_rule" model="ir.rule">
         <field name="name">Follow Purchase Request Line</field>
         <field name="model_id" ref="model_purchase_request_line"/>
@@ -101,6 +133,26 @@
         <field name="name">Purchase Request Line Manager</field>
         <field name="model_id" ref="model_purchase_request_line"/>
         <field name="groups" eval="[(6,0, [ref('group_purchase_request_manager')])]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="purchase_request_line_bodega_rule" model="ir.rule">
+        <field name="name">Purchase Request Line Bodega</field>
+        <field name="model_id" ref="model_purchase_request_line"/>
+        <field name="groups" eval="[(6,0, [ref('group_purchase_request_bodega')])]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="purchase_request_line_compra_rule" model="ir.rule">
+        <field name="name">Purchase Request Line Compra</field>
+        <field name="model_id" ref="model_purchase_request_line"/>
+        <field name="groups" eval="[(6,0, [ref('group_purchase_request_compra')])]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
