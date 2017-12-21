@@ -33,22 +33,22 @@
                             groups="purchase_request.group_purchase_request_manager"/>
                     <button name="button_done"
                             states="approved"
-                            string="Comprado"
+                            string="Gestionado"
                             type="object"
                             class="oe_highlight"
-                            groups="purchase_request.group_purchase_request_manager,purchase_request.group_purchase_request_compra"/>
+                            groups="purchase_request.group_purchase_request_compra"/>
                     <button name="button_rejected"
                             states="approved,standby"
                             string="Rechazar Bodega"
                             type="object"
-                            groups="purchase_request.group_purchase_request_manager,purchase_request.group_purchase_request_bodega"/>
+                            groups="purchase_request.group_purchase_request_bodega"/>
                     <button name="button_rejected"
-                            states="approved,standby"
+                            states="approved,to_approve"
                             string="Rechazar Compra"
                             type="object"
                             groups="purchase_request.group_purchase_request_manager"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,to_approve,approved,done,rejected"
+                           statusbar_visible="draft,standby,to_approve,approved,done,rejected"
                            statusbar_colors='{"approved":"blue"}'/>
                 </header>
                 <sheet>
@@ -171,8 +171,10 @@
             <field name="model">purchase.request</field>
             <field name="arch" type="xml">
                 <tree decoration-bf="message_needaction==True"
-                      decoration-info="state in ('draft','to_approve')"
-                      decoration-muted="state in ('rejected')"
+                      decoration-info="state in ('to_approve')"
+                      decoration-warning="state in ('standby')"
+                      decoration-muted="state in ('done')"
+                      decoration-success="state in ('approved')"
                       string="Purchase Request">
                     <field name="message_needaction" invisible="1"/>
                     <field name="name"/>
@@ -271,10 +273,10 @@
                       decoration-muted="cancelled == True">
                     <field name="request_id"/>
                     <field name="product_id"/>
-                    <field name="name"/>
+                    <field name="name" />
                     <field name="specifications"/>
-                    <field name="requested_by"/>
-                    <field name="assigned_to"/>
+                    <field name="requested_by" invisible="1"/>
+                    <field name="assigned_to" invisible="1"/>
                     <field name="date_required"/>
                     <field name="priority"/>
                     <field name="product_qty"/>
@@ -473,11 +475,6 @@
             parent="menu_purchase_request"
             action="purchase_request_form_action"
             />
-        <menuitem
-            id="menu_purchase_request_line_act"
-            sequence="20"
-            parent="menu_purchase_request"
-            action="purchase_request_line_form_action"
-            />
+        
 
 </odoo>

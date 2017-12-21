@@ -13,7 +13,7 @@ _STATES = [
     ('to_approve', 'En Espera'),
     ('approved', 'Aprobado'),
     ('rejected', 'Rechazado'),
-    ('done', 'Comprado')
+    ('done', 'Gestionado')
 ]
 
 
@@ -56,6 +56,12 @@ class PurchaseRequest(models.Model):
         bodega_obj = self.env['res.users']
         bname = bodega_obj.search([('name','=','Jaime Medina')])
         return bname
+
+    @api.model
+    def _default_compras(self):
+        compras_obj = self.env['res.users']
+        cname = compras_obj.search([('name','=','Álvaro Aldás')])
+        return cname
 
     @api.model
     def _default_hour(self):
@@ -111,6 +117,10 @@ class PurchaseRequest(models.Model):
                                  required=True, 
                                  track_visibility='onchange', 
                                  default=_default_bodega)
+    compras_user = fields.Many2one('res.users','Compras',
+                                 required=True, 
+                                 track_visibility='onchange', 
+                                 default=_default_compras)
     description = fields.Text('Description')
     company_id = fields.Many2one('res.company', 'Company',
                                  required=True,
@@ -207,6 +217,7 @@ class PurchaseRequest(models.Model):
         for obj in self:
             msg="Solicitud de Compra Aprobada"
             obj.requested_by.notify_info(msg,sticky=True)
+            obj.compras_user.notify_info(msg,sticky=True)
         return self.write({'state': 'approved'})
 
     @api.multi
