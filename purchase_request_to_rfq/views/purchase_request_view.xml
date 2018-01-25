@@ -88,7 +88,7 @@
                                 <label for="product_qty" readonly="1"/>
                                 <div>
                                     <field name="product_qty" readonly="1" class="oe_inline"/>
-                                    <field name="product_uom" readonly="1" groups="product.group_uom" class="oe_inline"/>
+                                    <field name="product_uom" readonly="1" class="oe_inline"/>
                                 </div>
                                 <field name="price_unit" widget="monetary" readonly="1"/>
                             </group>
@@ -116,14 +116,14 @@
             <field name="name">purchase.order.line.tree</field>
             <field name="model">purchase.order.line</field>
             <field name="arch" type="xml">
-                <tree string="Purchase Order Lines" create="true">
+                <tree string="Purchase Order Lines" create="true" delete="false">
                     <field name="order_id"/>
                     <field name="name"/>
                     <field name="partner_id" string="Vendor"/>
                     <field name="product_id"/>
                     <field name="price_unit"/>
                     <field name="product_qty"/>
-                    <field name="product_uom" groups="product.group_uom"/>
+                    <field name="product_uom" />
                     <field name="price_subtotal" widget="monetary"/>
                     <field name="date_planned"  widget="date"/>
                     <field name="purchase_request_lines" invisible="1"/>

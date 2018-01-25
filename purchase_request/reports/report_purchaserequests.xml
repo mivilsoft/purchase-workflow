@@ -50,7 +50,7 @@
                                         <strong>Analytic Account</strong>
                                     </th>
                                     <th class="text-right"><strong>Qty</strong></th>
-                                    <th class="text-center" groups="product.group_uom">
+                                    <th class="text-center" >
                                         <strong>UdM</strong>
                                     </th>
                                     <th class="text-right"><strong>Prioridad</strong></th>
@@ -69,7 +69,7 @@
                                         <span t-field="line_ids.product_qty"/>
                                     </td>
                                     <t>
-                                        <td class="text-center" groups="product.group_uom">
+                                        <td class="text-center" >
                                             <span t-field="line_ids.product_uom_id"/>
                                         </td>
                                     </t>

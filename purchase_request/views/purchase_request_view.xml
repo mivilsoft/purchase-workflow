@@ -7,7 +7,7 @@
             <field name="name">purchase.request.form</field>
             <field name="model">purchase.request</field>
             <field name="arch" type="xml">
-                <form string="Purchase Request" version="7.0">
+                <form string="Purchase Request" version="7.0" delete="false">
                 <header>
                     <button name="button_draft"
                             states="to_approve,approved,rejected,done"
@@ -101,7 +101,7 @@
                                     <field name="product_id"/>
                                     <field name="name"/>
                                     <field name="product_qty"/>
-                                    <field name="product_uom_id"  />
+                                    <field name="product_uom_id"/>
                                     <field name="analytic_account_id"
                                            groups="analytic.group_analytic_accounting"/>
                                     <field name="specifications"/>
@@ -127,10 +127,7 @@
                                                     <field name="product_qty"
                                                            class="oe_inline"
                                                            attrs="{'readonly': [('is_editable','=', False)]}"/>
-                                                    <field name="product_uom_id"
-                                                           
-                                                           class="oe_inline"
-                                                           attrs="{'readonly': [('is_editable','=', True)]}"/>
+                                                    <field name="product_uom_id"/>
                                                 </div>
                                                 <field name="analytic_account_id"
                                                        groups="analytic.group_analytic_accounting"
@@ -175,7 +172,9 @@
                       decoration-warning="state in ('standby')"
                       decoration-muted="state in ('done')"
                       decoration-success="state in ('approved')"
-                      string="Purchase Request">
+                      string="Purchase Request" 
+                      delete="false"
+                      >
                     <field name="message_needaction" invisible="1"/>
                     <field name="name"/>
                     <field name="hour_start"/>
@@ -269,7 +268,9 @@
             <field name="name">purchase.request.line.tree</field>
             <field name="model">purchase.request.line</field>
             <field name="arch" type="xml">
-                <tree string="Purchase Request Lines" create="false"
+                <tree string="Purchase Request Lines"  
+                      delete="false"
+                      create="false"
                       decoration-muted="cancelled == True">
                     <field name="request_id"/>
                     <field name="product_id"/>
@@ -294,7 +295,7 @@
             <field name="model">purchase.request.line</field>
             <field name="priority" eval="20"/>
             <field name="arch" type="xml">
-                <form string="Purchase Request Line" duplicate="false">
+                <form string="Purchase Request Line" duplicate="false" delete="false">
                     <sheet>
                         <h1>
                             <field name="request_id"/>
@@ -329,8 +330,7 @@
                                            class="oe_inline"
                                            attrs="{'readonly': [('is_editable','=', False)]}"/>
                                     <field name="product_uom_id"
-                                           groups="product.group_uom"
-                                           class="oe_inline"
+                                           
                                            attrs="{'readonly': [('is_editable','=', False)]}"/>
                                 </div>
                                 <field name="analytic_account_id"
