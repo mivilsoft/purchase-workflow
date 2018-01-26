@@ -54,13 +54,13 @@ class PurchaseRequest(models.Model):
     @api.model
     def _default_bodega(self):
         bodega_obj = self.env['res.users']
-        bname = bodega_obj.search([('name','=','Jaime Medina')])
+        bname = bodega_obj.search([('name','=','Álvaro Aldás')])
         return bname
 
     @api.model
     def _default_compras(self):
         compras_obj = self.env['res.users']
-        cname = compras_obj.search([('name','=','Álvaro Aldás')])
+        cname = compras_obj.search([('name','=','Andrés Flores')])
         return cname
 
     @api.model
