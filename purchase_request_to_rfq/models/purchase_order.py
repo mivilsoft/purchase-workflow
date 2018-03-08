@@ -4,9 +4,123 @@
 
 from odoo import _, api, exceptions, fields, models
 
+from datetime import datetime
+
 
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
+
+    document_count = fields.Integer(compute="_compute_document", string='# of Bills', copy=False, default=0)
+    document_ids = fields.Many2many('account.invoice', compute="_compute_document", string='Bills', copy=False)
+    dateState = fields.Date(
+        'Fecha Aprox. de Arribo')
+
+    landc_count = fields.Integer(compute="_compute_landc", string='# of Landed Cost', copy=False, default=0)
+    landc_ids = fields.Many2many('stock.landed.cost', compute="_compute_landc", string='landed Cost', copy=False)
+    @api.depends('invoice_ids','invoice_count')
+    def _compute_document(self):
+        for order in self:
+            invoices = self.env['account.invoice'].search([('origin','=',order.name)])
+        order.document_ids = invoices
+        order.document_count = len(invoices)
+    
+    @api.depends('invoice_ids','invoice_count')
+    def _compute_landc(self):
+        for order in self:
+            invoices = self.env['stock.picking'].search([('origin','=',order.name)])
+            files = self.env['stock.landed.cost'].search([('picking_ids','=',invoices.name)])
+        print("///////////////")
+        print(invoices.name)
+        order.landc_ids = files
+        order.landc_count = len(files)
+        
+    @api.multi  
+    def action_view_document(self):
+        '''
+        This function returns an action that display existing vendor bills of given purchase order ids.
+        When only one found, show the vendor bill immediately.
+        '''
+        action = self.env.ref('account.action_invoice_tree2')
+        result = action.read()[0]
+
+        #override the context to get rid of the default filtering
+        result['context'] = {'type': 'in_invoice', 'default_purchase_id': self.id}
+
+        if not self.document_ids:
+            # Choose a default account journal in the same currency in case a new invoice is created
+            journal_domain = [
+                ('type', '=', 'purchase'),
+                ('company_id', '=', self.company_id.id),
+                ('currency_id', '=', self.currency_id.id),
+            ]
+            default_journal_id = self.env['account.journal'].search(journal_domain, limit=1)
+            if default_journal_id:
+                result['context']['default_journal_id'] = default_journal_id.id
+        else:
+            # Use the same account journal than a previous invoice
+            result['context']['default_journal_id'] = self.document_ids[0].journal_id.id
+
+        #choose the view_mode accordingly
+        if len(self.document_ids) != 1:
+            result['domain'] = "[('id', 'in', " + str(self.document_ids.ids) + ")]"
+        elif len(self.document_ids) == 1:
+            res = self.env.ref('account.invoice_supplier_form', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = self.document_ids.id
+        return result
+
+    @api.multi
+    def action_view_landc(self):
+        '''
+        This function returns an action that display existing vendor bills of given purchase order ids.
+        When only one found, show the vendor bill immediately.
+        '''
+        action = self.env.ref('stock_landed_costs.action_stock_landed_cost')
+        result = action.read()[0]
+
+        #override the context to get rid of the default filtering
+        result['context'] = {'type': 'in_invoice', 'default_purchase_id': self.id}
+
+        if not self.landc_ids:
+            # Choose a default account journal in the same currency in case a new invoice is created
+            journal_domain = [
+                ('type', '=', 'purchase'),
+                ('company_id', '=', self.company_id.id),
+                ('currency_id', '=', self.currency_id.id),
+            ]
+            default_journal_id = self.env['account.journal'].search(journal_domain, limit=1)
+            if default_journal_id:
+                result['context']['default_journal_id'] = default_journal_id.id
+        else:
+            # Use the same account journal than a previous invoice
+            result['context']['default_journal_id'] = self.landc_ids[0].account_journal_id.id
+
+        #choose the view_mode accordingly
+        if len(self.landc_ids) != 1:
+            result['domain'] = "[('id', 'in', " + str(self.landc_ids.ids) + ")]"
+        elif len(self.landc_ids) == 1:
+            res = self.env.ref('stock_landed_costs.view_stock_landed_cost_form', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = self.landc_ids.id
+        return result
+
+    def scheduler(self):
+        purchase_orders = self.env['purchase.order'].search([])
+        print(purchase_orders)
+        for purchase_order_id in purchase_orders :
+            if(purchase_order_id.dateState):
+                aux = datetime.strptime(purchase_order_id.dateState, '%Y-%m-%d')
+                resta=aux.date() - datetime.now().date()
+                if (resta.days>=-2 and resta.days<=0):
+                
+                    # region PopUp
+                    msg = u"Chequear Fecha Estimada de la Orden %s" % (purchase_order_id.name)
+
+                    # Codigo para buscar a todos los Admin de Vehiculos
+                    usuarios = self.env['res.groups'].search([('name', '=', 'Admin Vehículos')]).users
+                    for user in usuarios:
+                        print user.name
+                        user.notify_info(msg, sticky=True)
 
     @api.multi
     def _purchase_request_confirm_message_content(self, request,

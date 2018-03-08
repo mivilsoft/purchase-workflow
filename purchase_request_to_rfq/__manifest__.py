@@ -12,7 +12,8 @@
     "category": "Purchase Management",
     "depends": [
         "purchase_request",
-        "purchase"],
+        "purchase",
+        "web_notify"],
     "data": [
         "security/ir.model.access.csv",
         "wizard/purchase_request_line_make_purchase_order_view.xml",
