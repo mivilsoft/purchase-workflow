@@ -319,10 +319,9 @@ class PurchaseRequestLine(models.Model):
                                 default=fields.Date.context_today)
     priority = fields.Selection(
         [
-            ('urgent','Urgente (1-3 Horas'),
-            ('important','Importante (Mismo Día)'),
-            ('normal','Normal(1-2 Días)'),
-            ('low','Baja(Más de 2 Días)')
+            ('urgent','Urgente (24 Horas)'),
+            ('important','Importante (4 Días)'),
+            ('normal','Normal(10 Días)')
         ],
             string='Prioridad', required=True,
                                 track_visibility='onchange',)
