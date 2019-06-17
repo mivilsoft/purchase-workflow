@@ -113,6 +113,7 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         supplier = self.supplier_id
         data = {
             'origin': '',
+            'internal_ref': '',
             'partner_id': self.supplier_id.id,
             'fiscal_position_id': supplier.property_account_position_id and
             supplier.property_account_position_id.id or False,
@@ -204,8 +205,9 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         purchase_obj = self.env['purchase.order']
         po_line_obj = self.env['purchase.order.line']
         pr_line_obj = self.env['purchase.request.line']
+        origin = []
+        ref=[]
         purchase = False
-
         for item in self.item_ids:
             line = item.line_id
             if item.product_qty <= 0.0:
@@ -242,6 +244,14 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                 new_pr_line=new_pr_line)
             po_line.product_qty = new_qty
             po_line._onchange_quantity()
+            if item.request_id.name:
+                if not item.request_id.name in origin:
+                    origin.append(item.request_id.name)
+                    purchase.origin += item.request_id.name + ", "
+            if item.request_id.internal_ref:
+                if not item.request_id.internal_ref in ref:
+                    ref.append(item.request_id.internal_ref)
+                    purchase.internal_ref += item.request_id.internal_ref + ", "
             # The onchange quantity is altering the scheduled date of the PO
             # lines. We do not want that:
             po_line.date_planned = item.line_id.date_required

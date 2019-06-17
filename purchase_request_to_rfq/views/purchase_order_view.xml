@@ -27,7 +27,7 @@
                             <field name='document_ids' invisible="1"/>
                     </button> 
                 </xpath>
-                <xpath expr="//button[@name='action_view_document']"
+                <!-- <xpath expr="//button[@name='action_view_document']"
                        position="after">
                     <button type="object"  name="action_view_landc"
                             class="oe_stat_button"
@@ -35,12 +35,14 @@
                             <field name="landc_count" widget="statinfo" string="Landing Cost"/>
                             <field name='landc_ids' invisible="1"/>
                     </button> 
-                </xpath>
+                </xpath> -->
                 <xpath expr="//field[@name='incoterm_id']"
                        position="after">
-                    
                         <field name="dateState"  string="Fecha Aprox."/>
-                        
+                 </xpath>
+                <xpath expr="//field[@name='origin']"
+                       position="after">
+                        <field name="internal_ref"  string="Internal Ref."  attrs="{'invisible': [('internal_ref','=',False)]}"/>
                 </xpath>
             </field>
         </record>

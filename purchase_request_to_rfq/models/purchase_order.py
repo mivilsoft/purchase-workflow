@@ -14,9 +14,9 @@ class PurchaseOrder(models.Model):
     document_ids = fields.Many2many('account.invoice', compute="_compute_document", string='Bills', copy=False)
     dateState = fields.Date(
         'Fecha Aprox. de Arribo')
-
-    landc_count = fields.Integer(compute="_compute_landc", string='# of Landed Cost', copy=False, default=0)
-    landc_ids = fields.Many2many('stock.landed.cost', compute="_compute_landc", string='landed Cost', copy=False)
+    internal_ref = fields.Char('Internal. Ref')
+    # landc_count = fields.Integer(compute="_compute_landc", string='# of Landed Cost', copy=False, default=0)
+    # landc_ids = fields.Many2many('stock.landed.cost', compute="_compute_landc", string='landed Cost', copy=False)
     @api.depends('invoice_ids','invoice_count')
     def _compute_document(self):
         for order in self:
@@ -24,15 +24,16 @@ class PurchaseOrder(models.Model):
         order.document_ids = invoices
         order.document_count = len(invoices)
     
-    @api.depends('invoice_ids','invoice_count')
-    def _compute_landc(self):
-        for order in self:
-            invoices = self.env['stock.picking'].search([('origin','=',order.name)])
-            files = self.env['stock.landed.cost'].search([('picking_ids','=',invoices.name)])
-        print("///////////////")
-        print(invoices.name)
-        order.landc_ids = files
-        order.landc_count = len(files)
+    # @api.depends('invoice_ids','invoice_count')
+    # def _compute_landc(self):
+    #     import pdb; pdb.set_trace()
+    #     for order in self:
+    #         invoices = self.env['stock.picking'].search([('origin','=',order.name),['state','=','assign']])
+    #         files = self.env['stock.landed.cost'].search([('picking_ids','=',invoices[0].name)])
+    #     print("///////////////")
+    #     # print(invoices.name)
+    #     order.landc_ids = files
+    #     order.landc_count = len(files)
         
     @api.multi  
     def action_view_document(self):
