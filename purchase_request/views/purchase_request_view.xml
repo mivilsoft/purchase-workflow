@@ -153,6 +153,13 @@
                                 </form>
                             </field>
                         </page>
+                        <page string="Other Info">
+                            <group>
+                                <group>
+                                    <field name="internal_ref"/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
                 <div class="oe_chatter">

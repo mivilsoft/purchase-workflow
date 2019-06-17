@@ -122,6 +122,7 @@ class PurchaseRequest(models.Model):
                                  track_visibility='onchange', 
                                  default=_default_compras)
     description = fields.Text('Description')
+    internal_ref = fields.Char('Internal. Ref')
     company_id = fields.Many2one('res.company', 'Company',
                                  required=True,
                                  default=_company_get,
